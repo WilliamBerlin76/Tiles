@@ -3,6 +3,8 @@
 const buffer = document.createElement('canvas').getContext('2d');
 const display = document.querySelector('canvas').getContext('2d');
 
+const output = document.querySelector('p');
+
 const tileSize = 16;
 
 
@@ -24,10 +26,10 @@ const map = {
 
     tiles: [0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,
             0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,
-            0,0,1,1,0,0,1,1,1,1,1,0,0,0,0,0,
+            0,0,1,1,0,0,1,1,1,1,1,0,0,0,1,0,
             0,0,1,1,1,0,0,0,1,1,0,0,0,0,0,0,
-            0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,
-            0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,
+            0,0,0,1,1,0,0,0,0,0,0,0,0,1,0,0,
+            0,0,0,0,0,0,0,1,1,1,0,0,0,1,1,0,
             0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,
             0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
             0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -37,6 +39,44 @@ const map = {
             3,3,3,3,3,3,3,3,3,3,3,2,2,2,2,0,
             3,3,3,3,3,3,3,3,3,3,3,3,3,3,2,2]
 };
+
+const controller = {
+
+    pointerX: 0,
+    pointerY: 0,
+
+    move: (e) => {
+        // canvas element location
+        let rect = display.canvas.getBoundingClientRect();
+
+        // store position of te move event inside the pointer variables
+        controller.pointerX = e.clientX - rect.left;
+        controller.pointerY = e.clientY - rect.top;
+        // console.log(controller.pointerX, controller.pointerY)
+    }
+};
+
+const loop = function(timestamp){
+
+    let width = parseInt(display.canvas.style.width.replace('px', ''));
+    let height = parseInt(display.canvas.style.height.replace('px', ''));
+
+    let tileX = Math.floor(controller.pointerX / (width / 16));
+    let tileY = Math.floor(controller.pointerY / (height / 14));
+
+    let value = map.tiles[tileY * 16 + tileX];
+
+    renderTiles();
+
+    buffer.fillStyle = "rgba(128, 128, 128, 0.5)";
+    buffer.fillRect(tileX * tileSize, tileY * tileSize, tileSize, tileSize);
+
+    display.drawImage(buffer.canvas, 0, 0, buffer.canvas.width, buffer.canvas.height, 0, 0, display.canvas.width, display.canvas.height);
+
+    output.innerHTML = `tile value: ${value},<br>tileX: ${tileX}, <br>tileY: ${tileY}` ;
+
+    window.requestAnimationFrame(loop)
+}
 
 function renderTiles(){
 
@@ -74,8 +114,9 @@ function resize(event){
         width = Math.floor(height * map.widthHeightRatio);
         
     };
-    display.canvas.style.height = height - 150 + 'px';
-    display.canvas.style.width = width - 150 + 'px';
+    display.canvas.style.height = height - 100 + 'px';
+    display.canvas.style.width = width - 100 + 'px';
+
 };
 
 buffer.canvas.width = display.canvas.width = map.width;
@@ -87,8 +128,11 @@ buffer.imageSmoothingEnabled = display.imageSmoothingEnabled = false;
 
 renderTiles();
 
-renderDisplay();
+// renderDisplay();
 
 window.addEventListener('resize', resize);
+display.canvas.addEventListener("mousemove", controller.move);
 
 resize();
+window.requestAnimationFrame(loop)
+
