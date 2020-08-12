@@ -42,6 +42,7 @@ const map = {
 
 const controller = {
 
+    ////////// MOUSE HOVER///////
     pointerX: 0,
     pointerY: 0,
 
@@ -53,11 +54,31 @@ const controller = {
         controller.pointerX = e.clientX - rect.left;
         controller.pointerY = e.clientY - rect.top;
         // console.log(controller.pointerX, controller.pointerY)
-    }
+    },
+
+
+    ////////// ARROW CONTROLS////////
+    left: false,
+    right: false,
+    up: false,
+    down: false,
+
+    keyStrokes: (e) => {
+
+        let keyState = e.type === "keydown" ? true : false;
+
+        switch(e.keyCode){
+
+            case 37: controller.left = keyState; break;
+            case 38: controller.up = keyState; break;
+            case 39: controller.right = keyState; break;
+            case 40: controller.down = keyState; break;
+        }
+    }   
 };
 
 const loop = function(timestamp){
-
+    
     let width = parseInt(display.canvas.style.width.replace('px', ''));
     let height = parseInt(display.canvas.style.height.replace('px', ''));
 
@@ -132,6 +153,9 @@ renderDisplay();
 window.addEventListener('resize', resize);
 display.canvas.addEventListener("mousemove", controller.move);
 
+window.addEventListener('keydown', controller.keyStrokes);
+window.addEventListener('keyup', controller.keyStrokes);
+
 resize();
-window.requestAnimationFrame(loop)
+window.requestAnimationFrame(loop);
 
