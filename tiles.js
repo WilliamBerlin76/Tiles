@@ -72,8 +72,7 @@ const loop = function(timestamp){
     buffer.fillRect(tileX * tileSize, tileY * tileSize, tileSize, tileSize);
 
     display.drawImage(buffer.canvas, 0, 0, buffer.canvas.width, buffer.canvas.height, 0, 0, display.canvas.width, display.canvas.height);
-
-    output.innerHTML = `tile value: ${value},<br>tileX: ${tileX}, <br>tileY: ${tileY}` ;
+    output.innerHTML = `tile value: ${value},<br>tile_color: ${tiles[value] ? tiles[value].color : null}<br>tileX: ${tileX}, <br>tileY: ${tileY}` ;
 
     window.requestAnimationFrame(loop)
 }
@@ -126,9 +125,9 @@ buffer.canvas.height = display.canvas.height = map.height;
 
 buffer.imageSmoothingEnabled = display.imageSmoothingEnabled = false;
 
-renderTiles();
+// renderTiles();
 
-// renderDisplay();
+renderDisplay();
 
 window.addEventListener('resize', resize);
 display.canvas.addEventListener("mousemove", controller.move);
