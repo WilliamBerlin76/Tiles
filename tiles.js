@@ -26,18 +26,18 @@ const map = {
 
     tiles: [0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,
             0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,
-            0,0,1,1,0,0,1,1,1,1,1,0,0,0,1,0,
-            0,0,1,1,1,0,0,0,1,1,0,0,0,0,0,0,
-            0,0,0,1,1,0,0,0,0,0,0,0,0,1,0,0,
-            0,0,0,0,0,0,0,1,1,1,0,0,0,1,1,0,
-            0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,
+            0,0,1,1,0,0,2,1,1,1,1,0,0,0,1,0,
+            0,0,1,1,1,0,0,0,1,2,0,0,0,0,0,0,
+            0,0,0,1,1,0,0,0,0,0,0,2,2,1,0,0,
+            0,0,0,2,2,2,2,1,1,1,2,0,0,1,1,0,
+            0,3,3,3,3,0,0,0,0,1,0,3,0,0,0,0,
             0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
             0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
             2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,
             3,3,2,2,2,0,2,2,2,2,2,0,0,0,0,0,
             3,3,3,3,2,2,2,3,3,3,2,2,0,0,0,0,
-            3,3,3,3,3,3,3,3,3,3,3,2,2,2,2,0,
-            3,3,3,3,3,3,3,3,3,3,3,3,3,3,2,2]
+            3,3,3,3,3,3,3,3,3,3,3,2,2,2,0,0,
+            3,3,3,3,3,3,3,3,3,3,3,3,3,2,2,0]
 };
 
 const controller = {
@@ -88,7 +88,47 @@ const player = {
     velocityY: 0,
     x: 128,
     y: 0
-}
+};
+
+const collision = {
+    0:function(object, row, column){
+        
+    },
+
+    1:function(object, row, column){
+
+    },
+
+    2:function(object, row, column){
+
+        this.topCollision(object, row);
+        
+    },
+
+    3:function(object, row, column){
+        this.topCollision(object, row);
+    },
+
+    topCollision(object, row){
+        
+
+        if(object.velocityY > 0){
+
+            let top = row * tileSize;
+
+            if (top < object.y + object.height && top >= object.oldY + object.height){
+
+                object.velocityY = 0;
+                object.jumping = false;
+                object.oldY = object.y = top - object.height - 0.01;
+
+                return true;
+            };
+        };
+        
+        return false
+    }
+};
 
 const loop = function(timestamp){
     
@@ -100,23 +140,29 @@ const loop = function(timestamp){
 
     let value = map.tiles[tileY * 16 + tileX];
 
-    if (controller.up){
-        player.velocityY -= 0.25;
-    }
+    player.velocityY += 0.5;
+    if (controller.up && !player.jumping){
+        player.jumping = true
+        player.velocityY -= 13;
+    };
     
     if (controller.left){
         player.velocityX -= 0.25
-    }
+    };
 
     if (controller.right){
         player.velocityX += 0.25;
-    }
+    };
 
     if (controller.down){
         player.velocityY += 0.25;
-    }
+    };
 
+    // store old coordinates
+    player.oldX = player.x;
+    player.oldY = player.y
     
+    // update new coordinates
     player.x += player.velocityX;
     player.y += player.velocityY;
     player.velocityX *= 0.9;
@@ -124,13 +170,39 @@ const loop = function(timestamp){
 
     if (player.x >= display.canvas.width - 16){ // right side collision
         player.x = display.canvas.width - 16;
-    } 
+    }; 
     if (player.x <= 0){ // left side collision
         player.x = 0;
     };
     if (player.y <= 0){ // top collision
         player.y = 0;
-    } 
+    }; 
+    if (player.y >= display.canvas.height - 16){
+        player.y = display.canvas.height - 16;
+        player.jumping = false;
+    }
+
+
+    let tile_x = Math.floor((player.x + player.width * 0.5) / tileSize);
+    let tile_y = Math.floor((player.y + player.height) / tileSize);
+
+    let valueAtIndex = map.tiles[tile_y * map.columns + tile_x];
+    
+    if(valueAtIndex){
+        collision[valueAtIndex](player, tile_y, tile_x)
+    }
+    
+
+    tile_x = Math.floor((player.x + player.width * 0.5) / tileSize);
+    tile_y = Math.floor((player.y + player.height) / tileSize);
+
+    valueAtIndex = map.tiles[tile_y * map.columns + tile_x];
+    
+    if(valueAtIndex){
+        collision[valueAtIndex](player, tile_y, tile_x)
+    }
+    
+
 
     renderTiles();
 
@@ -138,7 +210,7 @@ const loop = function(timestamp){
     buffer.fillRect(tileX * tileSize, tileY * tileSize, tileSize, tileSize);
 
     display.drawImage(buffer.canvas, 0, 0, buffer.canvas.width, buffer.canvas.height, 0, 0, display.canvas.width, display.canvas.height);
-    output.innerHTML = `tile value: ${value},<br>tile_color: ${tiles[value] ? tiles[value].color : null}<br>tileX: ${tileX}, <br>tileY: ${tileY}` ;
+    output.innerHTML = `tile value: ${valueAtIndex},<br>tileX: ${tile_x}, <br>tileY: ${tile_y}` ;
 
     window.requestAnimationFrame(loop)
 }
@@ -181,8 +253,14 @@ function resize(event){
         width = Math.floor(height * map.widthHeightRatio);
         
     };
-    display.canvas.style.height = height - 100 + 'px';
-    display.canvas.style.width = width - 100 + 'px';
+    
+    if (width <= 800){
+        display.canvas.style.height = height - 50 + 'px';
+        display.canvas.style.width = width - 50 + 'px';
+    } else {
+        display.canvas.style.height = height - 200 + 'px';
+        display.canvas.style.width = width - 200 + 'px';
+    }
 
 };
 
@@ -193,7 +271,6 @@ buffer.canvas.height = display.canvas.height = map.height;
 
 buffer.imageSmoothingEnabled = display.imageSmoothingEnabled = false;
 
-// renderTiles();
 
 renderDisplay();
 
