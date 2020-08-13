@@ -55,8 +55,12 @@ const controller = {
         controller.pointerY = e.clientY - rect.top;
         // console.log(controller.pointerX, controller.pointerY)
     },
+    hoverVal: 0,
 
-
+    clickVal: (e) => {
+        e.type === "click" && console.log('clicked', controller.hoverVal)
+        map.tiles[controller.hoverVal] === 3 ? map.tiles[controller.hoverVal] = 0 : map.tiles[controller.hoverVal]++
+    },
     ////////// ARROW CONTROLS////////
     left: false,
     right: false,
@@ -139,6 +143,8 @@ const loop = function(timestamp){
     let tileY = Math.floor(controller.pointerY / (height / 14));
 
     let value = map.tiles[tileY * 16 + tileX];
+
+    controller.hoverVal = tileY * 16 + tileX;
 
     player.velocityY += 0.5;
     if (controller.up && !player.jumping){
@@ -279,6 +285,7 @@ display.canvas.addEventListener("mousemove", controller.move);
 
 window.addEventListener('keydown', controller.keyStrokes);
 window.addEventListener('keyup', controller.keyStrokes);
+window.addEventListener('click', controller.clickVal)
 
 resize();
 window.requestAnimationFrame(loop);
