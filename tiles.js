@@ -77,6 +77,19 @@ const controller = {
     }   
 };
 
+const player = {
+    width: 16,
+    height: 16,
+    color: '#ff0000',
+    jumping: false,
+    oldX: 224,
+    oldY: 256,
+    velocityX: 0,
+    velocityY: 0,
+    x: 128,
+    y: 0
+}
+
 const loop = function(timestamp){
     
     let width = parseInt(display.canvas.style.width.replace('px', ''));
@@ -86,6 +99,38 @@ const loop = function(timestamp){
     let tileY = Math.floor(controller.pointerY / (height / 14));
 
     let value = map.tiles[tileY * 16 + tileX];
+
+    if (controller.up){
+        player.velocityY -= 0.25;
+    }
+    
+    if (controller.left){
+        player.velocityX -= 0.25
+    }
+
+    if (controller.right){
+        player.velocityX += 0.25;
+    }
+
+    if (controller.down){
+        player.velocityY += 0.25;
+    }
+
+    
+    player.x += player.velocityX;
+    player.y += player.velocityY;
+    player.velocityX *= 0.9;
+    player.velocityY *= 0.9;
+
+    if (player.x >= display.canvas.width - 16){ // right side collision
+        player.x = display.canvas.width - 16;
+    } 
+    if (player.x <= 0){ // left side collision
+        player.x = 0;
+    };
+    if (player.y <= 0){ // top collision
+        player.y = 0;
+    } 
 
     renderTiles();
 
@@ -114,6 +159,8 @@ function renderTiles(){
             mapIndex++;
         };
     };
+    buffer.fillStyle = player.color;
+    buffer.fillRect(player.x, player.y, player.width, player.height);
 };
 
 function renderDisplay(){
