@@ -7,7 +7,6 @@ const output = document.querySelector('p');
 
 const tileSize = 16;
 
-
 const tiles = {
     0: { color:'#d8f4f4' }, // sky
     1: { color:'#ffffff' }, // cloud
@@ -16,6 +15,8 @@ const tiles = {
 };
 
 const map = {
+
+    gravity: true,
 
     columns: 16,
     rows: 14,
@@ -53,13 +54,14 @@ const controller = {
         // store position of te move event inside the pointer variables
         controller.pointerX = e.clientX - rect.left;
         controller.pointerY = e.clientY - rect.top;
-        // console.log(controller.pointerX, controller.pointerY)
+        
     },
     hoverVal: 0,
-
+    ///// TILE CHANGE CLICKER/////
     clickVal: (e) => {
-        e.type === "click" && console.log('clicked', controller.hoverVal)
+        
         map.tiles[controller.hoverVal] === 3 ? map.tiles[controller.hoverVal] = 0 : map.tiles[controller.hoverVal]++
+
     },
     ////////// ARROW CONTROLS////////
     left: false,
@@ -74,12 +76,25 @@ const controller = {
         switch(e.keyCode){
 
             case 37: controller.left = keyState; break;
+            case 65: controller.left = keyState; break;
+
             case 38: controller.up = keyState; break;
+            case 87: controller.up = keyState; break;
+
             case 39: controller.right = keyState; break;
+            case 68: controller.right = keyState; break;
+
             case 40: controller.down = keyState; break;
+            case 83: controller.down = keyState; break;
         }
-    }   
+    },
+    
+    gravityToggle: (e) => {
+        if(e.keyCode === 71) map.gravity = !map.gravity;
+    }
 };
+
+
 
 const player = {
     width: 16,
@@ -146,10 +161,14 @@ const loop = function(timestamp){
 
     controller.hoverVal = tileY * 16 + tileX;
 
-    player.velocityY += 0.5;
-    if (controller.up && !player.jumping){
-        player.jumping = true
+    map.gravity && (player.velocityY += 0.5); /// add gravity if gravity is on
+
+    if (controller.up && !player.jumping && map.gravity){
+        player.jumping = true;
         player.velocityY -= 13;
+    } else if(controller.up && !map.gravity){
+        player.jumping = false;
+        player.velocityY -= 0.25
     };
     
     if (controller.left){
@@ -216,8 +235,8 @@ const loop = function(timestamp){
     buffer.fillRect(tileX * tileSize, tileY * tileSize, tileSize, tileSize);
 
     display.drawImage(buffer.canvas, 0, 0, buffer.canvas.width, buffer.canvas.height, 0, 0, display.canvas.width, display.canvas.height);
-    output.innerHTML = `tile value: ${valueAtIndex},<br>tileX: ${tile_x}, <br>tileY: ${tile_y}` ;
-
+    // output.innerHTML = `tile value: ${valueAtIndex},<br>tileX: ${tile_x}, <br>tileY: ${tile_y}` ;
+    output.innerHTML = `Gravity: ${map.gravity ? 'ON' : 'OFF'}` ;
     window.requestAnimationFrame(loop)
 }
 
@@ -285,7 +304,8 @@ display.canvas.addEventListener("mousemove", controller.move);
 
 window.addEventListener('keydown', controller.keyStrokes);
 window.addEventListener('keyup', controller.keyStrokes);
-window.addEventListener('click', controller.clickVal)
+window.addEventListener('keydown', controller.gravityToggle)
+window.addEventListener('click', controller.clickVal);
 
 resize();
 window.requestAnimationFrame(loop);
