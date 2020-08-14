@@ -128,7 +128,7 @@ const collision = {
         if(this.topCollision(object, row)){
             return
         } 
-        this.bottomCollision(object, row);
+        this.bottomCollision(object, row, column);
     },
 
     topCollision(object, row){
@@ -141,30 +141,34 @@ const collision = {
 
                 object.velocityY = 0;
                 object.jumping = false;
-                object.oldY = object.y = top - object.height - 0.01;
+                object.oldY = object.y = top - object.height;
 
                 return true;
             };
         };
         
-        return false
+        return false;
     },
 
-    bottomCollision(object, row){
-
+    bottomCollision(object, row, column){
         if(object.velocityY < 0){
 
             let bottom = row * tileSize + tileSize;
-
+            
             if(bottom > object.y && bottom <= object.oldY){
                 object.velocityY = 0;
-                object.oldY = object.y = bottom + 0.01;
+                object.oldY = object.y = bottom;
                 
                 return true;
-            };
+            } else if (bottom >= object.y + object.height && map.tiles[(row - 1) * map.columns + row] === 3){
+                object.velocityY = 0;
+                object.oldY = object.y = bottom - object.height
+
+                return true;
+            }
         };
 
-        return false
+        return false;
     }
 };
 
