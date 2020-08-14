@@ -99,7 +99,7 @@ const controller = {
 const player = {
     width: 16,
     height: 16,
-    color: '#ff0000',
+    color: '#dd00ff',
     jumping: false,
     oldX: 224,
     oldY: 256,
@@ -125,12 +125,14 @@ const collision = {
     },
 
     3:function(object, row, column){
-        this.topCollision(object, row);
+        if(this.topCollision(object, row)){
+            return
+        } 
+        this.bottomCollision(object, row);
     },
 
     topCollision(object, row){
         
-
         if(object.velocityY > 0){
 
             let top = row * tileSize;
@@ -145,6 +147,23 @@ const collision = {
             };
         };
         
+        return false
+    },
+
+    bottomCollision(object, row){
+
+        if(object.velocityY < 0){
+
+            let bottom = row * tileSize + tileSize;
+
+            if(bottom > object.y && bottom <= object.oldY){
+                object.velocityY = 0;
+                object.oldY = object.y = bottom + 0.01;
+                
+                return true;
+            };
+        };
+
         return false
     }
 };
@@ -219,7 +238,7 @@ const loop = function(timestamp){
     
 
     tile_x = Math.floor((player.x + player.width * 0.5) / tileSize);
-    tile_y = Math.floor((player.y + player.height) / tileSize);
+    tile_y = Math.floor((player.y) / tileSize);
 
     valueAtIndex = map.tiles[tile_y * map.columns + tile_x];
     
